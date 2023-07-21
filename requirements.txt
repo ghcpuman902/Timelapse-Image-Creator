@@ -1,0 +1,6 @@
+numpy
+pillow
+concurrent-futures
+memory-profiler
+gc
+PyYAML

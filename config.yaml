@@ -1,0 +1,17 @@
+# Configuration for the time-lapse image creation program
+
+input:
+  dir: "./test_imgs/"  # Directory where the input images are stored
+  file_prefix: "output_"  # Prefix of the input image files
+  file_number_digit_length: 4  # Number of digits in the file number
+  file_begin_digit: 1  # Starting number of the image files
+  file_end_digit: 360  # Ending number of the image files
+  file_suffix: "JPG"  # File extension of the image files
+
+  # the default config will load image ./test_imgs/output_0001.JPG to ./test_imgs/output_0360.JPG 
+
+output:
+  dir: "./output/"  # Directory where the output image will be saved
+
+options:
+  is_reversed: False  # Option to reverse the order of the images
