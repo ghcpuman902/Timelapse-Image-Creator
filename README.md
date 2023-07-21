@@ -1,24 +1,25 @@
 # Time-Lapse Image Creator
 
-This Python program creates a unique visual art piece - a time-lapse image composed from a series of photographs. The program extracts vertical columns of pixels from each input photo and stitches them together to form a final composite image. This innovative approach allows the depiction of the passage of time in a single image.
+This Python program creates a unique visual art piece: a time-lapse image composed from a series of photographs. The program extracts vertical columns of pixels from each input photo and stitches them together to form a final composite image. This innovative approach allows the depiction of the passage of time in a single image.
 
 ## Features
 
 ![Features](Feature.jpg)
+🖼️ **Time-Lapse Image Creation**: The program creates a time-lapse image by stitching together vertical columns of pixels from each input photo.
 
-- **Time-lapse Image Creation**: The program creates a unique visual art piece - a time-lapse image composed from a series of photographs. It extracts vertical columns of pixels from each input photo and stitches them together to form a final composite image. This innovative approach allows the depiction of the passage of time in a single image.
+🔄 **Image Rotation**: The program can handle image rotation. If you want to combine images from top to bottom, you can apply a 90º rotation to the images before processing.
 
-- **Image Rotation**: The program can handle image rotation. If you wish to combine images from top to bottom, you can apply a 90º rotation to the images before processing.
+🔀 **Reverse Order**: The program allows you to reverse the order of images. This can be useful when you want to depict the time-lapse in reverse chronological order.
 
-- **Reverse Order**: The program allows you to reverse the order of images. This can be useful in certain scenarios where the time-lapse needs to be depicted in reverse chronological order.
+🧠 **Memory Profiling**: The program includes a memory profiler that monitors the maximum memory usage. This helps manage memory resources effectively, especially when processing large images.
 
-- **Memory Profiling**: The program is equipped with a memory profiler that monitors the maximum memory usage. This is particularly useful when processing large images, as it helps in managing memory resources effectively.
+⚙️ **Flexible Configuration**: The program provides a `config.yaml` file for easy configuration of input and output files, as well as additional options like image rotation and reverse order.
 
-- **Flexible Configuration**: The program comes with a `config.yaml` file that allows you to easily configure the input and output files, as well as additional options like image rotation and reverse order.
+🖼️ **Supports All Image Formats**: The program supports all major image formats for both input and output images. The output format will match the input format.
 
-- **Supports JPG Format**: The program supports .JPG format for both input and output images. The output format will match the input format.
+⚡ **Multi-Threaded CPU**: The program utilizes multiple CPU threads for faster processing. By default, it runs on all available threads up to 12, but you can configure the number of threads according to your system's capabilities.
 
-**Note**: The program does not support reflection.
+**Note**: The program will ignore any reflection applied to the input images.
 
 ## Installation and Running the Program
 
@@ -27,16 +28,20 @@ This Python program creates a unique visual art piece - a time-lapse image compo
 3. Update the `config.yaml` file according to your needs. The comments in the file explain how its fields correspond to the program's functionality.
 4. Run the program by executing `python main.py`.
 
-**Note**: As this program can be memory intensive due to the processing of large images, it is equipped with a memory profiler that monitors the maximum memory usage. You can take advantage of this by adding `@profile` in front of `process_single_image` then run `python -m memory_profiler main.py`, like this:
+**Note I**: As this program can be memory intensive due to the processing of large images, it is equipped with a memory profiler that monitors the maximum memory usage. You can take advantage of this by adding `@profile` in front of `process_single_image` in `main.py`, then run `python -m memory_profiler main.py`, like this:
 ```
 @profile
 def process_single_image(image, slice_index, slice_width, is_horizontal):
-# rest of the code
+```
+
+**Note II**: By default, the program utilizes all available CPU threads up to 12 threads. If you want to change this, you can edit the following line in `main.py`:
+```
+    with ThreadPoolExecutor(max_workers=12) as executor:
 ```
 
 ## Configuration
 
-The configurations for input and output files as well as additional options are stored in the `config.yaml` file.
+The configurations for input and output files, as well as additional options, are stored in the `config.yaml` file.
 
 ```
 # Configuration for the time-lapse image creation program
@@ -58,7 +63,7 @@ options:
   is_reversed: False  # Option to reverse the order of the images
 ```
 
-**Note**: output format will match input format, so .JPG will result in a .JPG file
+**Note**: The output format will match the input format, so .JPG will result in a .JPG file
 
 ## Example
 
