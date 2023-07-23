@@ -47,36 +47,40 @@ def get_image_orientation(image):
     else:
         return 0
 
-def process_single_image(image, slice_index, slice_width, is_horizontal):
+def process_single_image(image_path, slice_index, slice_width, is_horizontal):
     """
     Process individual image, extracting slices.
     """
-    image_np = np.array(image)
-    if is_horizontal:
-        image_slice = image_np[:, slice_index:slice_index+slice_width]
-    else:
-        image_slice = image_np[slice_index:slice_index+slice_width, :]
+    with Image.open(image_path) as image:
+        image_np = np.array(image)
+        if is_horizontal:
+            image_slice = image_np[:, slice_index:slice_index+slice_width]
+        else:
+            image_slice = image_np[slice_index:slice_index+slice_width, :]
     del image_np
     gc.collect()
     return image_slice
 
-def create_time_lapse(image_list, is_horizontal):
+def create_time_lapse(image_paths, is_horizontal):
     """
     Combination of images to create the time-lapse.
     """
     # Initialize blank canvas for final image
-    if is_horizontal:
-        final_dimension = image_list[0].width
-    else:
-        final_dimension = image_list[0].height
-    combined_image = np.zeros((image_list[0].height, image_list[0].width, 3), dtype=np.uint8)
+    with Image.open(image_paths[0]) as first_image:
+        if is_horizontal:
+            target_image_side_length = first_image.width
+        else:
+            target_image_side_length = first_image.height
+        combined_image = np.zeros((first_image.height, first_image.width, 3), dtype=np.uint8)
     current_index = 0
+    batches = list(divide_into_batches(image_paths, BATCH_SIZE))  # Divide image list into batches
+    total_batches = len(batches)  # Get total number of batches
     with ThreadPoolExecutor(max_workers=12) as executor:
-        for batch_index, image_batch in enumerate(divide_into_batches(image_list, BATCH_SIZE)):
+        for batch_index, image_batch in enumerate(batches):
             slice_futures = []
-            for index, image in enumerate(image_batch):
-                slice_width = get_linear_mapping(len(image_list), final_dimension, index)
-                future = executor.submit(process_single_image, image, current_index, slice_width, is_horizontal)
+            for index, image_path in enumerate(image_batch):
+                slice_width = get_linear_mapping(len(image_paths), target_image_side_length, index)
+                future = executor.submit(process_single_image, image_path, current_index, slice_width, is_horizontal)
                 slice_futures.append((future, current_index, slice_width))
                 current_index += slice_width
             for future, start_index, slice_width in slice_futures:
@@ -85,7 +89,7 @@ def create_time_lapse(image_list, is_horizontal):
                     combined_image[:, start_index:start_index+slice_width] = image_slice
                 else:
                     combined_image[start_index:start_index+slice_width, :] = image_slice
-            print(f"Batch {batch_index + 1} completed")             
+            print(f"Batch {batch_index + 1}/{total_batches} completed")  # Print total number of batches
             gc.collect()
 
     # Finalize the combined image
@@ -101,6 +105,7 @@ def validate_config(config):
     assert isinstance(config['input']['file_number_digit_length'], int), "File number digit length must be an integer."
     assert config['input']['file_number_digit_length'] > 0, "File number digit length must be a positive integer."
 
+@profile
 def main():
     """
     Main driver function.
@@ -122,28 +127,27 @@ def main():
     total_images = file_end_digit - file_begin_digit + 1
     is_reversed = config['options']['is_reversed']
 
-    image_list = []
+    image_paths = []
 
-    # Load images
+    # Load image paths
     start_time = time.time()
     for i in range(file_begin_digit, file_end_digit+1):
         filename = f"{file_prefix}{str(i).zfill(file_number_digit_length)}.{file_suffix}"
-        try:
-            image = Image.open(os.path.join(input_dir, filename))
-            image_list.append(image)
-        except FileNotFoundError:
+        filepath = os.path.join(input_dir, filename)
+        if os.path.isfile(filepath):
+            image_paths.append(filepath)
+        else:
             print(f"File {filename} not found.")
-            continue
 
     first_image_file = f"{file_prefix}{str(file_begin_digit).zfill(file_number_digit_length)}.{file_suffix}"
     orientation = get_image_orientation(Image.open(os.path.join(input_dir, first_image_file)))
 
     if is_reversed ^ (orientation in [270, 180]):
-        image_list.reverse()  # More efficient than image_list[::-1]
+        image_paths.reverse()  # More efficient than image_paths[::-1]
 
     is_horizontal = (orientation in [0, 180])
 
-    final_image = create_time_lapse(image_list, is_horizontal)
+    final_image = create_time_lapse(image_paths, is_horizontal)
 
     if orientation != 0: 
         final_image = final_image.rotate(orientation, expand=True)
