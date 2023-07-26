@@ -21,6 +21,16 @@ This Python program creates a unique visual art piece: a time-lapse image compos
 
 **Note**: The program will ignore any reflection applied to the input images.
 
+## Gallery
+
+**Contribution welcomed**
+
+![London_Sunset_9908-10909](output/London_Sunset_9908-10909.JPG)
+
+
+![Jing_Shan_Coast_8140-9060](<output/Jing_Shan_Coast_8140-9060 2.jpg>)
+The periodic ocean left a repeating pattern of black spikes on the image.
+
 ## Installation and Running the Program
 
 1. Clone the repository.
